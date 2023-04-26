@@ -1,0 +1,13 @@
+Descargar la imagen de la página oficial: https://education.lego.com/en-us/product-resources/mindstorms-ev3/teacher-resources/python-for-ev3
+
+Instalar el flasheador Rufus (BalenaEtcher no funcionaba)
+Insertar la sd en el PC
+Extraer el zip de la imagen y seleccionar el archivo iso en Rufus. 
+
+Insertar la sd en el Brick, encencer el brick y conectarlo al pc vía USB
+
+Instalar Lego Minstorms
+
+Enlazar el dispsito en el apartado dispositivos
+
+Ejecutar el programa desde Mindstorms Micropython en VisualStudio Code
