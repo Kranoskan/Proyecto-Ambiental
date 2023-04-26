@@ -19,8 +19,8 @@ ev3.speaker.beep()
 # Run the motor up to 500 degrees per second. To a target angle of 90 degrees.
 test_motor.run_target(500, 90)
 i =0
-while i<10:
-    test_motor.run_target(500, 90)
+#while i<10:
+    #test_motor.run_target(500, 90)
 
 # Play another beep sound.
 ev3.speaker.beep(frequency=1000, duration=500)
