@@ -10,11 +10,8 @@ Intalar Python:
 
 Insertar la sd en el Brick, encencer el brick y conectarlo al pc vía USB
 
-Instalar Lego Minstorms
+Instalar Lego Mindstorms
 
-Enlazar el dispsito en el apartado dispositivos
+Compartir WIFI por Bluetooth no llegó a funcionar nunca llegaba a estado ONLINE
+Compartirle WIFI por cable: https://www.ev3dev.org/docs/tutorials/connecting-to-the-internet-via-usb/
 
-Ejecutar el programa desde Mindstorms Micropython en VisualStudio Code
-	Instalación de librerías en la terminal o la del visual
-		- pip install paho-mqtt
-		- pip install pbricks

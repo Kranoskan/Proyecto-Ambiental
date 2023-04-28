@@ -7,18 +7,14 @@ from pybricks.robotics import DriveBase
 from pybricks.media.ev3dev import SoundFile, ImageFile
 import pybricks
 
-# This program requires LEGO EV3 MicroPython v2.0 or higher.
-# Click "Open user guide" on the EV3 extension tab for more information.
-
-
-# Create your objects here.
 ev3 = EV3Brick()
+motor = Motor(Port.B)
 
 from umqtt.simple import MQTTClient
 
 # Configurar el cliente MQTT
 mqtt_server = "platinumvulture693.cloud.shiftr.io"
-client_id = "identificador-del-cliente"
+client_id = "EV3"
 username = "platinumvulture693"
 password = "VQrRjf9gXs2Exnmi"
 
@@ -26,6 +22,36 @@ password = "VQrRjf9gXs2Exnmi"
 client = MQTTClient(client_id, mqtt_server, user=username, password=password)
 client.connect()
 
-topic = "nombre-del-tema"
-message = "mensaje-a-publicar"
+topic = "conectado"
+message = "conectado"
 client.publish(topic, message)
+gradosRotados=0;
+def callback(topic, message):
+    #print("Mensaje recibido en el tema {}: {}".format(topic, message))
+    orden=str(message)
+    ordenProcesada=orden[2:3]
+    print(ordenProcesada)
+    #ev3.speaker.beep()
+    if ordenProcesada=="s":
+        #motor.run_target(500, 700) #500 grados por segundo hasta alcanzar 90 grados
+        #motor.run_target(1000,anguloMaximoArriba)
+        motor.run(1000)
+        #while a<2:
+            #motor.run(1000)
+            #wait(10)
+            #print(motor.angle())
+    if ordenProcesada=="b":
+        motor.run(-1000)
+        #anguloMaximoAbajo=0
+        #motor.run_target(-1000,anguloMaximoAbajo)
+    if ordenProcesada=="p":
+        motor.stop()
+    #print(motor.angle())
+
+    
+client.set_callback(callback)
+client.subscribe("subir")
+client.subscribe("bajar")
+client.subscribe("parar")
+while True:
+    client.check_msg()
