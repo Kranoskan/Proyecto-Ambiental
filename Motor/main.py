@@ -1,7 +1,6 @@
 #!/usr/bin/env pybricks-micropython
 from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
+from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor, InfraredSensor, UltrasonicSensor, GyroSensor)
 from pybricks.parameters import Port, Stop, Direction, Button, Color
 from pybricks.tools import wait, StopWatch, DataLog
 from pybricks.robotics import DriveBase
@@ -17,28 +16,16 @@ ev3 = EV3Brick()
 
 from umqtt.simple import MQTTClient
 
-# Configuración del cliente MQTT
-SERVER = 'your-mqtt-server.com'
-PORT = 1883
-USER = 'your-username'
-PASSWORD = 'your-password'
-CLIENT_ID = 'your-client-id'
+# Configurar el cliente MQTT
+mqtt_server = "platinumvulture693.cloud.shiftr.io"
+client_id = "identificador-del-cliente"
+username = "platinumvulture693"
+password = "VQrRjf9gXs2Exnmi"
 
-# Función de callback para procesar los mensajes recibidos
-def callback(topic, msg):
-    print(topic.decode(), msg.decode())
-
-# Conexión al servidor MQTT
-client = MQTTClient('client', '192.168.0.123', user='username', password='mypassword')
-client.set_callback(callback)
+# Crear un objeto MQTTClient y conectarse al broker MQTT
+client = MQTTClient(client_id, mqtt_server, user=username, password=password)
 client.connect()
 
-# Suscripción a un topic
-client.subscribe(b'test/topic')
-
-# Publicación de un mensaje
-client.publish(b'test/topic', b'Hola, mundo!')
-
-# Esperar mensajes
-while True:
-    client.wait_msg()
+topic = "nombre-del-tema"
+message = "mensaje-a-publicar"
+client.publish(topic, message)
