@@ -1,4 +1,3 @@
-
 #include <SPI.h>
 #include <WiFi101.h>
 #include <MQTT.h>
@@ -15,6 +14,10 @@ int distance;
 
 char ssid[] = "*";
 char pass[] = "*";
+char link[] = "*.cloud.shiftr.io"; // dirección del shiftr.io, despues del https://
+char name[] = "*"; // Nombre del shiftr.io
+char token[] = "*"; //la clave del token
+char arduinoID[] = "arduino";
 
 WiFiClient net;
 MQTTClient client;
@@ -25,6 +28,11 @@ uint16_t BNO055_SAMPLERATE_DELAY_MS = 100;
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, &Wire);
 
+float UMBRAL=2; //margen para detectar si está cayendo
+
+float GRAVEDAD=9.8;
+
+//bool caida=false; // por si queremos que una vez se active sólo mandará mensaje de caida
 
 void setup(void)
 {
@@ -38,7 +46,7 @@ void setup(void)
   }
     // start wifi and mqtt
   WiFi.begin(ssid, pass);
-  client.begin("platinumvulture693.cloud.shiftr.io", net);
+  client.begin(link, net);
   client.onMessage(messageReceived);
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
@@ -46,6 +54,9 @@ void setup(void)
   delay(1000);
 }
 
+void reset(){
+//  caida=false;
+}
 
 void connect() {
   Serial.print("checking wifi...");
@@ -55,77 +66,57 @@ void connect() {
   }
 
   Serial.print("\nconnecting...");
-  while (!client.connect("arduino", "platinumvulture693", "VQrRjf9gXs2Exnmi")) {
+  while (!client.connect(arduinoID, name, token)) {
     Serial.print(".");
     delay(1000);
   }
-
   Serial.println("\nconnected!");
-
   client.subscribe("Distancia");
   client.subscribe("Caida");
 }
-
-
 
 void messageReceived(String &topic, String &payload) {
 }
 
 void loop() {
-
   delayMicroseconds(2);
   // Sets the trigPin on HIGH state for 10 micro seconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
-
   client.loop();
   delay(10);
-
   // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
   // Calculating the distance
   distance = duration * 0.034 / 2;
-
   if (!client.connected()) {
     connect();
   }
   sensors_event_t  accelerometerData;
   bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
-
-
-  printEvent(&accelerometerData);
-
-
-
-  int8_t boardTemp = bno.getTemp();
-  Serial.println();
-  Serial.println(boardTemp);
-
-
   uint8_t system, gyro, accel, mag = 0;
   bno.getCalibration(&system, &gyro, &accel, &mag);
-
   String caida=printEvent(&accelerometerData);
-  
   client.publish("Distancia", String(distance));
   client.publish("Caida", String(caida));
 }
 
-
-
-
 String printEvent(sensors_event_t* event) {
-  double x = 0, y = 0 , z = 0; 
- 
-  if (event->type == SENSOR_TYPE_ACCELEROMETER){
-    x = event->acceleration.x;
-    y = event->acceleration.y;
-    z = event->acceleration.z;
-  }
-  if((x<-11 || x>11)|| (y<-11 || y>11) || (z<-11 || z>11)){
-    return "Cayendo";
-
-  }
-  return "NoCae";
+  String salida="Cayendo";
+  //if(!caida){
+    double x = 0, y = 0 , z = 0; 
+    if (event->type == SENSOR_TYPE_ACCELEROMETER){
+      x = event->acceleration.x;
+      y = event->acceleration.y;
+      z = event->acceleration.z;
+    }
+    float umbralCaida=GRAVEDAD+UMBRAL;
+    if((x<-umbralCaida || x>umbralCaida)|| (y<-umbralCaida || y>umbralCaida) || (z<-umbralCaida || z>umbralCaida)){
+    //  caida=true;
+    }else{
+      salida= "NoCae";
+    }
+  //}
+  return salida;
 }
