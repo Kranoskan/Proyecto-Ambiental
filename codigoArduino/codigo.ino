@@ -12,11 +12,11 @@ const int echoPin = 2;
 long duration;
 int distance;
 
-char ssid[] = "*";
-char pass[] = "*";
-char link[] = "*.cloud.shiftr.io"; // dirección del shiftr.io, despues del https://
-char name[] = "*"; // Nombre del shiftr.io
-char token[] = "*"; //la clave del token
+char ssid[] = "Redmi Note 8T";
+char pass[] = "aaas1234";
+char link[] = "platinumvulture693.cloud.shiftr.io"; // dirección del shiftr.io, despues del https://
+char name[] = "platinumvulture693"; // Nombre del shiftr.io
+char token[] = "VQrRjf9gXs2Exnmi"; //la clave del token
 char arduinoID[] = "arduino";
 
 WiFiClient net;
@@ -32,7 +32,7 @@ float UMBRAL=2; //margen para detectar si está cayendo
 
 float GRAVEDAD=9.8;
 
-//bool caida=false; // por si queremos que una vez se active sólo mandará mensaje de caida
+bool caidaB=false; // por si queremos que una vez se active sólo mandará mensaje de caida
 
 void setup(void)
 {
@@ -55,7 +55,7 @@ void setup(void)
 }
 
 void reset(){
-//  caida=false;
+  caidaB=false;
 }
 
 void connect() {
@@ -79,13 +79,13 @@ void messageReceived(String &topic, String &payload) {
 }
 
 void loop() {
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   // Sets the trigPin on HIGH state for 10 micro seconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
-  client.loop();
-  delay(10);
   // Reads the echoPin, returns the sound wave travel time in microseconds
   duration = pulseIn(echoPin, HIGH);
   // Calculating the distance
@@ -98,13 +98,42 @@ void loop() {
   uint8_t system, gyro, accel, mag = 0;
   bno.getCalibration(&system, &gyro, &accel, &mag);
   String caida=printEvent(&accelerometerData);
-  client.publish("Distancia", String(distance));
-  client.publish("Caida", String(caida));
+  Serial.print("\n Distancia: ");
+  Serial.print(distance);
+  //Serial.print("  Caida: ");
+  //Serial.print(caida);
+  delayMicroseconds(100000);
+  if(!caidaB){
+    if(distance>=25){
+      client.publish("subir", "s");
+      Serial.print("\n Subir");
+    }
+    if(distance<16){
+      client.publish("bajar", "b");
+      Serial.print("\n Bajar");
+    }
+    if(distance<18 && distance>=16){
+      client.publish("mitad1", "m");
+      Serial.print("\n Mitad1");
+    }
+    if(distance>=22 && distance<25){
+      client.publish("mitad2", "n");
+      Serial.print("\n Mitad2");
+    }
+    if(distance>=18 && distance<22){
+      client.publish("mitad", "o");
+      Serial.print("\n Mitad");
+    }
+  }else{
+    client.publish("parar", "p");
+  }
+  //client.publish("Distancia", String(distance));
+  //client.publish("Caida", String(caida));
 }
 
 String printEvent(sensors_event_t* event) {
   String salida="Cayendo";
-  //if(!caida){
+  if(!caidaB){
     double x = 0, y = 0 , z = 0; 
     if (event->type == SENSOR_TYPE_ACCELEROMETER){
       x = event->acceleration.x;
@@ -113,10 +142,10 @@ String printEvent(sensors_event_t* event) {
     }
     float umbralCaida=GRAVEDAD+UMBRAL;
     if((x<-umbralCaida || x>umbralCaida)|| (y<-umbralCaida || y>umbralCaida) || (z<-umbralCaida || z>umbralCaida)){
-    //  caida=true;
+      caidaB=true;
     }else{
       salida= "NoCae";
     }
-  //}
+  }
   return salida;
 }
